@@ -19,7 +19,117 @@ import { useWebSocket } from '../context/WebSocketContext';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Filler, Title, Tooltip, Legend);
 
 ChartJS.defaults.font.family = '"Roboto", "Helvetica", "Arial", sans-serif';
-ChartJS.defaults.color = '#5f6368';
+ChartJS.defaults.color = '#94a3b8';
+
+const darkTooltip = {
+  backgroundColor: '#1e293b',
+  titleColor: '#e2e8f0',
+  bodyColor: '#94a3b8',
+  borderColor: '#334155',
+  borderWidth: 1,
+};
+
+// Card with colored top accent stripe
+const accentCard = (color) => ({
+  boxShadow: 'none',
+  border: '1px solid #1e293b',
+  borderTop: `3px solid ${color}`,
+  borderRadius: 2,
+  bgcolor: '#111827',
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+});
+
+// Card title row with optional badge
+function CardHeader({ title, badge, badgeColor = '#22d3ee' }) {
+  return (
+    <Box
+      sx={{
+        px: 2,
+        pt: 1.5,
+        pb: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottom: '1px solid #1e293b',
+      }}
+    >
+      <Typography variant="subtitle2" sx={{ color: '#e2e8f0', fontWeight: 600, letterSpacing: '0.3px' }}>
+        {title}
+      </Typography>
+      {badge && (
+        <Box
+          sx={{
+            px: 1,
+            py: 0.2,
+            borderRadius: '4px',
+            bgcolor: `${badgeColor}18`,
+            border: `1px solid ${badgeColor}40`,
+            color: badgeColor,
+            fontSize: '0.62rem',
+            fontWeight: 700,
+            letterSpacing: '1px',
+          }}
+        >
+          {badge}
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+// Section block: heading bar + charts grid inside one bordered container
+function Section({ label, accentColor, children }) {
+  return (
+    <Box
+      sx={{
+        border: '1px solid #1e293b',
+        borderRadius: 3,
+        overflow: 'hidden',
+      }}
+    >
+      {/* Section heading bar */}
+      <Box
+        sx={{
+          px: 3,
+          py: 1.25,
+          bgcolor: '#0d1321',
+          borderBottom: '1px solid #1e293b',
+          borderLeft: `4px solid ${accentColor}`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+        }}
+      >
+        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: accentColor, boxShadow: `0 0 6px ${accentColor}` }} />
+        <Typography
+          variant="caption"
+          sx={{
+            color: accentColor,
+            letterSpacing: '2.5px',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+            fontSize: '0.72rem',
+          }}
+        >
+          {label}
+        </Typography>
+      </Box>
+
+      {/* Charts inside */}
+      <Box sx={{ p: 2 }}>
+        <Grid container spacing={2}>
+          {children}
+        </Grid>
+      </Box>
+    </Box>
+  );
+}
+
+const noData = (msg = 'Awaiting signal...') => (
+  <Typography color="textSecondary" align="center" sx={{ pt: 9 }}>{msg}</Typography>
+);
 
 export default function ChartsPage() {
   const { history, analytics } = useWebSocket();
@@ -36,214 +146,234 @@ export default function ChartsPage() {
     animation: { duration: 0 },
     plugins: {
       legend: { labels: { usePointStyle: true, boxWidth: 8 } },
+      tooltip: darkTooltip,
     },
     scales: {
       x: {
         grid: { display: false },
         ticks: { maxTicksLimit: 8 },
-        border: { display: false }
+        border: { display: false },
       },
       y: {
-        grid: { color: '#f1f3f4', drawBorder: false },
-        border: { display: false, dash: [4, 4] }
-      }
-    }
+        grid: { color: '#1e293b', drawBorder: false },
+        border: { display: false, dash: [4, 4] },
+      },
+    },
   };
 
-  // --- 1. LIVE ACCELEROMETER CHART (X, Y, Z) ---
-  const lineChartData = {
+  // --- Vehicle Velocity ---
+  const velocityData = {
+    labels,
+    datasets: [{
+      label: 'Speed (km/h)',
+      data: chartPoints.map((p) => p.speed),
+      borderColor: '#fbbc05',
+      backgroundColor: 'rgba(251,188,5,0.15)',
+      fill: true, tension: 0.4, pointRadius: 2,
+    }],
+  };
+  const velocityOptions = {
+    ...commonOptions,
+    scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, beginAtZero: true, title: { display: true, text: 'km/h', color: '#64748b' } } },
+    plugins: { ...commonOptions.plugins, legend: { display: false } },
+  };
+
+  // --- 3-Axis Motion Feed ---
+  const motionFeedData = {
     labels,
     datasets: [
-      { label: 'X Axis', data: chartPoints.map((p) => p.x), borderColor: '#ea4335', backgroundColor: '#ea4335', tension: 0.4, pointRadius: 2 }, 
-      { label: 'Y Axis', data: chartPoints.map((p) => p.y), borderColor: '#4285f4', backgroundColor: '#4285f4', tension: 0.4, pointRadius: 2 }, 
-      { label: 'Z Axis', data: chartPoints.map((p) => p.z), borderColor: '#34a853', backgroundColor: '#34a853', tension: 0.4, pointRadius: 2 }, 
+      { label: 'X Axis', data: chartPoints.map((p) => p.x), borderColor: '#ea4335', backgroundColor: '#ea4335', tension: 0.4, pointRadius: 2 },
+      { label: 'Y Axis', data: chartPoints.map((p) => p.y), borderColor: '#4285f4', backgroundColor: '#4285f4', tension: 0.4, pointRadius: 2 },
+      { label: 'Z Axis', data: chartPoints.map((p) => p.z), borderColor: '#34a853', backgroundColor: '#34a853', tension: 0.4, pointRadius: 2 },
     ],
   };
-  const lineOptions = {
+  const motionFeedOptions = {
     ...commonOptions,
-    scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, min: -3.0, max: 3.0, title: { display: true, text: 'Acceleration (g)', color: '#9aa0a6' } } },
-    plugins: { ...commonOptions.plugins, legend: { position: 'top' }, title: { display: false } },
+    scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, min: -3.0, max: 3.0, title: { display: true, text: 'Acceleration (g)', color: '#64748b' } } },
+    plugins: { ...commonOptions.plugins, legend: { position: 'top' } },
   };
 
-  // --- 2. LIVE SPEED AREA CHART ---
-  const speedChartData = {
+  // --- Resultant G-Force ---
+  const gForceData = {
     labels,
     datasets: [{
-      label: 'Speed (km/h)', data: chartPoints.map((p) => p.speed),
-      borderColor: '#fbbc05', backgroundColor: 'rgba(251, 188, 5, 0.15)', fill: true, tension: 0.4, pointRadius: 2 
+      label: 'G-Force (g)',
+      data: magnitudes,
+      borderColor: '#a142f4',
+      backgroundColor: 'rgba(161,66,244,0.15)',
+      fill: true, tension: 0.4, pointRadius: 2,
     }],
   };
-  const speedOptions = {
+  const gForceOptions = {
     ...commonOptions,
-    scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, beginAtZero: true, title: { display: true, text: 'Speed (km/h)', color: '#9aa0a6' } } },
-    plugins: { ...commonOptions.plugins, legend: { display: false }, title: { display: false } },
+    scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, min: 0, max: 4.0, title: { display: true, text: 'Total Force (g)', color: '#64748b' } } },
+    plugins: { ...commonOptions.plugins, legend: { display: false } },
   };
 
-  // --- 3. NEW: REAL-TIME MAGNITUDE AREA CHART ---
-  const magChartData = {
+  // --- Impact Intensity ---
+  const impactData = {
     labels,
     datasets: [{
-      label: 'Magnitude (g)', data: magnitudes,
-      borderColor: '#a142f4', backgroundColor: 'rgba(161, 66, 244, 0.15)', fill: true, tension: 0.4, pointRadius: 2 
+      label: 'Impact (Δg)',
+      data: jerks,
+      backgroundColor: '#ea4335',
+      borderRadius: 4,
     }],
   };
-  const magOptions = {
+  const impactOptions = {
     ...commonOptions,
-    scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, min: 0, max: 4.0, title: { display: true, text: 'Total Force (g)', color: '#9aa0a6' } } },
-    plugins: { ...commonOptions.plugins, legend: { display: false }, title: { display: false } },
-  };
-
-  // --- 4. NEW: REAL-TIME JERK BAR CHART ---
-  const jerkChartData = {
-    labels,
-    datasets: [{
-      label: 'Jerk (Δg)', data: jerks,
-      backgroundColor: '#ea4335', borderRadius: 4, 
-    }],
-  };
-  const jerkOptions = {
-    ...commonOptions,
-    scales: { 
+    scales: {
       x: { grid: { display: false }, border: { display: false } },
-      y: { ...commonOptions.scales.y, beginAtZero: true, max: 3.0, title: { display: true, text: 'Shock Force (Δg)', color: '#9aa0a6' } } 
+      y: { ...commonOptions.scales.y, beginAtZero: true, max: 3.0, title: { display: true, text: 'Shock (Δg)', color: '#64748b' } },
     },
-    plugins: { ...commonOptions.plugins, legend: { display: false }, title: { display: false } },
+    plugins: { ...commonOptions.plugins, legend: { display: false } },
   };
 
-  // --- 5. ANALYTICS: BAR & DOUGHNUT CHARTS ---
-  const filteredEvents = Object.entries(analytics.events || {}).filter(([key]) => key !== "normal");
+  // --- Analytics ---
+  const filteredEvents = Object.entries(analytics.events || {}).filter(([key]) => key !== 'normal');
   const eventLabels = filteredEvents.map(([key]) => key);
   const eventData = filteredEvents.map(([, value]) => value);
-  const chartColors = ['#4285f4', '#ea4335', '#fbbc05', '#34a853', '#a142f4']; 
+  const chartColors = ['#4285f4', '#ea4335', '#fbbc05', '#34a853', '#a142f4'];
 
-  const barChartData = {
-    labels: eventLabels.map(label => label.toUpperCase()),
-    datasets: [{ label: 'Event Count', data: eventData, backgroundColor: chartColors, borderRadius: 4 }],
+  const incidentBarData = {
+    labels: eventLabels.map((l) => l.toUpperCase()),
+    datasets: [{ label: 'Count', data: eventData, backgroundColor: chartColors, borderRadius: 4 }],
   };
-  const doughnutChartData = {
-    labels: eventLabels.map(label => label.toUpperCase()),
+  const riskProfileData = {
+    labels: eventLabels.map((l) => l.toUpperCase()),
     datasets: [{ data: eventData, backgroundColor: chartColors, borderWidth: 0, hoverOffset: 4 }],
   };
-  const analyticsBarOptions = { 
-    ...commonOptions, 
-    plugins: { legend: { display: false } },
-    scales: { x: { grid: { display: false }, border: { display: false } }, y: { grid: { color: '#f1f3f4' }, border: { display: false } } }
+  const incidentBarOptions = {
+    ...commonOptions,
+    plugins: { ...commonOptions.plugins, legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, border: { display: false } },
+      y: { grid: { color: '#1e293b' }, border: { display: false } },
+    },
   };
-  const analyticsDoughnutOptions = { 
-    responsive: true, maintainAspectRatio: false, 
-    plugins: { legend: { position: 'right', labels: { usePointStyle: true, padding: 20 } } },
-    cutout: '70%' 
-  };
-
-  const cardStyle = { 
-    boxShadow: 'none', 
-    border: '1px solid #dadce0', 
-    borderRadius: 3, 
-    bgcolor: '#ffffff',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
+  const riskProfileOptions = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { usePointStyle: true, padding: 16, color: '#94a3b8' } },
+      tooltip: darkTooltip,
+    },
+    cutout: '70%',
   };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 3, pb: 2 }}>
-      <Grid container spacing={3}>
+    <Box sx={{ pb: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
 
-        {/* --- ROW 1: Raw Sensor Data (XYZ) & Speed --- */}
-        <Grid item xs={12} md={8}>
-          <Card sx={cardStyle}>
-            <Box sx={{ px: 2, pt: 2, pb: 0 }}>
-              <Typography variant="subtitle2" sx={{ color: '#5f6368', fontWeight: 600 }}>Real-Time Accelerometer</Typography>
-            </Box>
-            <CardContent sx={{ flexGrow: 1, height: '300px', pt: 1 }}>
-              {history.length === 0 ? <Typography color="textSecondary" align="center" mt={12}>Waiting for data...</Typography> : <Line options={lineOptions} data={lineChartData} />}
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        
+      {/* Page title */}
+      <Typography variant="h5" sx={{ fontWeight: 600, color: '#e2e8f0', letterSpacing: '0.5px' }}>
+        Sensor Analytics
+      </Typography>
 
-        {/* --- ROW 2: Derived Physics Data (Magnitude & Jerk) --- */}
+      {/* ── SECTION 1: LIVE TELEMETRY ── */}
+      <Section label="Live Telemetry" accentColor="#22d3ee">
+
+        {/* Vehicle Velocity — half */}
         <Grid item xs={12} md={6}>
-          <Card sx={cardStyle}>
-            <Box sx={{ px: 2, pt: 2, pb: 0 }}>
-              <Typography variant="subtitle2" sx={{ color: '#5f6368', fontWeight: 600 }}>Real-Time Magnitude</Typography>
-            </Box>
-            <CardContent sx={{ flexGrow: 1, height: '250px', pt: 1 }}>
-              {history.length === 0 ? <Typography color="textSecondary" align="center" mt={10}>Waiting for data...</Typography> : <Line options={magOptions} data={magChartData} />}
+          <Card sx={accentCard('#fbbc05')}>
+            <CardHeader title="Vehicle Velocity" badge="LIVE" badgeColor="#fbbc05" />
+            <CardContent sx={{ flexGrow: 1, height: '260px', pt: 1.5 }}>
+              {history.length === 0 ? noData() : <Line options={velocityOptions} data={velocityData} />}
             </CardContent>
           </Card>
         </Grid>
-        
+
+        {/* 3-Axis Motion Feed — half */}
         <Grid item xs={12} md={6}>
-          <Card sx={cardStyle}>
-            <Box sx={{ px: 2, pt: 2, pb: 0 }}>
-              <Typography variant="subtitle2" sx={{ color: '#5f6368', fontWeight: 600 }}>Real-Time Jerk (Shock Spikes)</Typography>
-            </Box>
-            <CardContent sx={{ flexGrow: 1, height: '250px', pt: 1 }}>
-              {history.length === 0 ? <Typography color="textSecondary" align="center" mt={10}>Waiting for data...</Typography> : <Bar options={jerkOptions} data={jerkChartData} />}
+          <Card sx={accentCard('#22d3ee')}>
+            <CardHeader title="3-Axis Motion Feed" badge="LIVE" badgeColor="#22d3ee" />
+            <CardContent sx={{ flexGrow: 1, height: '260px', pt: 1.5 }}>
+              {history.length === 0 ? noData() : <Line options={motionFeedOptions} data={motionFeedData} />}
             </CardContent>
           </Card>
         </Grid>
+
+      </Section>
+
+      {/* ── SECTION 2: MOTION ANALYSIS ── */}
+      <Section label="Motion Analysis" accentColor="#a142f4">
+
+        {/* Resultant G-Force — half */}
+        <Grid item xs={12} md={6}>
+          <Card sx={accentCard('#a142f4')}>
+            <CardHeader title="Resultant G-Force" badge="LIVE" badgeColor="#a142f4" />
+            <CardContent sx={{ flexGrow: 1, height: '240px', pt: 1.5 }}>
+              {history.length === 0 ? noData() : <Line options={gForceOptions} data={gForceData} />}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Impact Intensity — half */}
+        <Grid item xs={12} md={6}>
+          <Card sx={accentCard('#ea4335')}>
+            <CardHeader title="Impact Intensity" badge="LIVE" badgeColor="#ea4335" />
+            <CardContent sx={{ flexGrow: 1, height: '240px', pt: 1.5 }}>
+              {history.length === 0 ? noData() : <Bar options={impactOptions} data={impactData} />}
+            </CardContent>
+          </Card>
+        </Grid>
+
+      </Section>
+
+      {/* ── SECTION 3: JOURNEY INTELLIGENCE ── */}
+      <Section label="Journey Intelligence" accentColor="#fb923c">
+
+        {/* Incident Breakdown — one third */}
         <Grid item xs={12} md={4}>
-          <Card sx={cardStyle}>
-            <Box sx={{ px: 2, pt: 2, pb: 0 }}>
-              <Typography variant="subtitle2" sx={{ color: '#5f6368', fontWeight: 600 }}>Real-Time Speed</Typography>
-            </Box>
-            <CardContent sx={{ flexGrow: 1, height: '300px', pt: 1 }}>
-              {history.length === 0 ? <Typography color="textSecondary" align="center" mt={12}>Waiting for data...</Typography> : <Line options={speedOptions} data={speedChartData} />}
+          <Card sx={accentCard('#fb923c')}>
+            <CardHeader title="Incident Breakdown" badge="DB" badgeColor="#fb923c" />
+            <CardContent sx={{ flexGrow: 1, height: '230px', pt: 1.5 }}>
+              {eventLabels.length === 0
+                ? noData('No incidents recorded yet.')
+                : <Bar options={incidentBarOptions} data={incidentBarData} />}
             </CardContent>
           </Card>
         </Grid>
-        {/* --- ROW 3: Database Analytics --- */}
-        <Grid item xs={12} md={5}>
-          <Card sx={cardStyle}>
-            <Box sx={{ px: 2, pt: 2, pb: 0 }}>
-              <Typography variant="subtitle2" sx={{ color: '#5f6368', fontWeight: 600 }}>Event Distribution</Typography>
-            </Box>
-            <CardContent sx={{ flexGrow: 1, height: '250px', pt: 1 }}>
-              {eventLabels.length === 0 ? <Typography color="textSecondary" align="center" mt={10}>No events logged yet.</Typography> : <Bar options={analyticsBarOptions} data={barChartData} />}
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <Card sx={{ 
-            boxShadow: 'none', 
-            borderRadius: 3, 
-            height: '100%', 
-            minHeight: '250px', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            bgcolor: '#e8f0fe', 
-            color: '#1a73e8', 
-            border: '1px solid #d2e3fc'
+
+        {/* Mean Trip Speed — one third */}
+        <Grid item xs={12} md={4}>
+          <Card sx={{
+            boxShadow: 'none',
+            borderRadius: 2,
+            height: '100%',
+            minHeight: '230px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            bgcolor: 'rgba(34,211,238,0.05)',
+            border: '1px solid rgba(34,211,238,0.2)',
+            borderTop: '3px solid #22d3ee',
           }}>
             <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, color: '#1967d2' }}>
-                Average Route Speed
+              <Typography variant="caption" sx={{ color: '#475569', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>
+                Mean Trip Speed
               </Typography>
-              <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-1px' }}>
-                {analytics.avgSpeed} <Typography component="span" variant="h6" sx={{ fontWeight: 600 }}>km/h</Typography>
+              <Typography variant="h2" sx={{ fontWeight: 800, letterSpacing: '-2px', color: '#22d3ee', mt: 1.5, lineHeight: 1 }}>
+                {analytics.avgSpeed}
               </Typography>
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, mt: 0.5 }}>km/h</Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={cardStyle}>
-            <Box sx={{ px: 2, pt: 2, pb: 0 }}>
-              <Typography variant="subtitle2" sx={{ color: '#5f6368', fontWeight: 600 }}>Event Ratio</Typography>
-            </Box>
-            <CardContent sx={{ flexGrow: 1, height: '250px', pt: 1, display: 'flex', justifyContent: 'center' }}>
-              {eventLabels.length === 0 ? <Typography color="textSecondary" align="center" mt={10}>No events logged yet.</Typography> : <Doughnut options={analyticsDoughnutOptions} data={doughnutChartData} />}
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        
 
-      </Grid>
+        {/* Risk Profile — one third */}
+        <Grid item xs={12} md={4}>
+          <Card sx={accentCard('#4285f4')}>
+            <CardHeader title="Risk Profile" badge="DB" badgeColor="#4285f4" />
+            <CardContent sx={{ flexGrow: 1, height: '230px', pt: 1.5, display: 'flex', justifyContent: 'center' }}>
+              {eventLabels.length === 0
+                ? noData('No incidents recorded yet.')
+                : <Doughnut options={riskProfileOptions} data={riskProfileData} />}
+            </CardContent>
+          </Card>
+        </Grid>
+
+      </Section>
+
     </Box>
   );
 }

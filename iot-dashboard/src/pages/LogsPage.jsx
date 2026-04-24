@@ -1,23 +1,23 @@
 import { useState, useEffect } from 'react';
-import { 
-  Box, Typography, Card, Table, TableBody, TableCell, 
-  TableContainer, TableHead, TableRow, Chip, Tabs, Tab, CircularProgress, Pagination 
+import {
+  Box, Typography, Card, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Chip, Tabs, Tab, CircularProgress, Pagination
 } from '@mui/material';
 
 import { useWebSocket } from '../context/WebSocketContext';
 
 const getEventStyle = (event) => {
   switch (event) {
-    case 'normal': 
-      return { bgcolor: '#e6f4ea', color: '#1e8e3e', border: '1px solid #ceead6' }; 
-    case 'tow': 
-      return { bgcolor: '#fef7e0', color: '#b06000', border: '1px solid #fce8b2' }; 
-    case 'rash_driving': 
-    case 'collision': 
-    case 'toppling': 
-      return { bgcolor: '#fce8e6', color: '#d93025', border: '1px solid #f28b82' }; 
-    default: 
-      return { bgcolor: '#f1f3f4', color: '#5f6368', border: '1px solid #dadce0' }; 
+    case 'normal':
+      return { bgcolor: 'rgba(74,222,128,0.15)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.3)' };
+    case 'tow':
+      return { bgcolor: 'rgba(251,146,60,0.15)', color: '#fb923c', border: '1px solid rgba(251,146,60,0.3)' };
+    case 'rash_driving':
+    case 'collision':
+    case 'toppling':
+      return { bgcolor: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' };
+    default:
+      return { bgcolor: 'rgba(148,163,184,0.15)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.3)' };
   }
 };
 
@@ -27,13 +27,13 @@ const LogTable = ({ logs, isLoading }) => (
       <TableHead>
         <TableRow>
           {['Timestamp', 'Event', 'Speed (km/h)', 'Coordinates (Lat, Lon)', 'Accel (X, Y, Z)'].map((headCell) => (
-            <TableCell 
+            <TableCell
               key={headCell}
-              sx={{ 
-                fontWeight: 600, 
-                color: '#5f6368', 
-                bgcolor: '#f8f9fa',
-                borderBottom: '1px solid #dadce0',
+              sx={{
+                fontWeight: 600,
+                color: '#94a3b8',
+                bgcolor: '#111827',
+                borderBottom: '1px solid #1e293b',
                 textTransform: 'uppercase',
                 fontSize: '0.75rem',
                 letterSpacing: '0.5px'
@@ -48,12 +48,12 @@ const LogTable = ({ logs, isLoading }) => (
         {isLoading ? (
           <TableRow>
             <TableCell colSpan={5} align="center" sx={{ py: 8, borderBottom: 'none' }}>
-              <CircularProgress size={32} sx={{ color: '#1a73e8' }} />
+              <CircularProgress size={32} sx={{ color: '#22d3ee' }} />
             </TableCell>
           </TableRow>
         ) : logs.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={5} align="center" sx={{ py: 8, color: '#5f6368', borderBottom: 'none' }}>
+            <TableCell colSpan={5} align="center" sx={{ py: 8, color: '#94a3b8', borderBottom: 'none' }}>
               <Typography variant="body1" sx={{ fontWeight: 500 }}>No data available...</Typography>
             </TableCell>
           </TableRow>
@@ -61,19 +61,19 @@ const LogTable = ({ logs, isLoading }) => (
           logs.map((row) => {
             const rowStyle = getEventStyle(row.event);
             return (
-              <TableRow 
-                key={row.id || row._id} 
+              <TableRow
+                key={row.id || row._id}
                 hover
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                <TableCell sx={{ color: '#3c4043', fontWeight: 500 }}>
+                <TableCell sx={{ color: '#cbd5e1', fontWeight: 500, borderColor: '#1e293b' }}>
                   {row.timestamp || new Date(row.time).toLocaleTimeString()}
                 </TableCell>
-                <TableCell>
-                  <Chip 
-                    label={row.event?.toUpperCase() || 'UNKNOWN'} 
-                    size="small" 
-                    sx={{ 
+                <TableCell sx={{ borderColor: '#1e293b' }}>
+                  <Chip
+                    label={row.event?.toUpperCase() || 'UNKNOWN'}
+                    size="small"
+                    sx={{
                       fontWeight: 600,
                       fontSize: '0.7rem',
                       letterSpacing: '0.5px',
@@ -84,15 +84,15 @@ const LogTable = ({ logs, isLoading }) => (
                     }}
                   />
                 </TableCell>
-                <TableCell sx={{ color: '#3c4043' }}>{row.speed ?? 'N/A'}</TableCell>
-                <TableCell sx={{ color: '#5f6368', fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                  {row.lat !== undefined && row.lon !== undefined 
-                    ? `${row.lat.toFixed(4)}, ${row.lon.toFixed(4)}` 
+                <TableCell sx={{ color: '#cbd5e1', borderColor: '#1e293b' }}>{row.speed ?? 'N/A'}</TableCell>
+                <TableCell sx={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '0.85rem', borderColor: '#1e293b' }}>
+                  {row.lat !== undefined && row.lon !== undefined
+                    ? `${row.lat.toFixed(4)}, ${row.lon.toFixed(4)}`
                     : 'N/A'}
                 </TableCell>
-                <TableCell sx={{ color: '#5f6368', fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                  {row.x !== undefined 
-                    ? `${row.x}, ${row.y}, ${row.z}` 
+                <TableCell sx={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '0.85rem', borderColor: '#1e293b' }}>
+                  {row.x !== undefined
+                    ? `${row.x}, ${row.y}, ${row.z}`
                     : 'N/A'}
                 </TableCell>
               </TableRow>
@@ -106,11 +106,11 @@ const LogTable = ({ logs, isLoading }) => (
 
 export default function LogsPage() {
   const { sessionLogs: liveLogs } = useWebSocket();
-  
+
   const [tabIndex, setTabIndex] = useState(0);
   const [storedLogs, setStoredLogs] = useState([]);
   const [isLoadingStored, setIsLoadingStored] = useState(false);
-  
+
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -122,7 +122,7 @@ export default function LogsPage() {
           const filterParam = tabIndex === 2 ? '&filter=anomalies' : '';
           const response = await fetch(`http://localhost:8000/api/logs?page=${page}&limit=15${filterParam}`);
           const data = await response.json();
-          
+
           setStoredLogs(data.logs);
           setTotalPages(data.totalPages);
         } catch (error) {
@@ -146,39 +146,39 @@ export default function LogsPage() {
   };
 
   const tabStyle = (index) => ({
-    textTransform: 'none', 
-    fontWeight: 600, 
+    textTransform: 'none',
+    fontWeight: 600,
     fontSize: '0.95rem',
-    color: tabIndex === index ? '#1a73e8' : '#5f6368',
-    '&.Mui-selected': { color: '#1a73e8' }
+    color: tabIndex === index ? '#22d3ee' : '#94a3b8',
+    '&.Mui-selected': { color: '#22d3ee' }
   });
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Typography variant="h5" sx={{ fontWeight: 500, color: '#202124', letterSpacing: '-0.5px' }}>
+      <Typography variant="h5" sx={{ fontWeight: 600, color: '#e2e8f0', letterSpacing: '0.5px' }}>
         System Logs
       </Typography>
-      
-      <Card 
-        sx={{ 
-          flexGrow: 1, 
-          boxShadow: 'none', 
-          border: '1px solid #dadce0', 
-          borderRadius: 3, 
-          overflow: 'hidden', 
-          display: 'flex', 
+
+      <Card
+        sx={{
+          flexGrow: 1,
+          boxShadow: 'none',
+          border: '1px solid #1e293b',
+          borderRadius: 3,
+          overflow: 'hidden',
+          display: 'flex',
           flexDirection: 'column',
-          bgcolor: '#ffffff'
+          bgcolor: '#111827'
         }}
       >
-        <Box sx={{ borderBottom: '1px solid #dadce0', bgcolor: '#ffffff', flexShrink: 0 }}>
-          <Tabs 
-            value={tabIndex} 
-            onChange={handleTabChange} 
+        <Box sx={{ borderBottom: '1px solid #1e293b', bgcolor: '#111827', flexShrink: 0 }}>
+          <Tabs
+            value={tabIndex}
+            onChange={handleTabChange}
             variant="fullWidth"
             sx={{
               '& .MuiTabs-indicator': {
-                backgroundColor: '#1a73e8',
+                backgroundColor: '#22d3ee',
                 height: 3,
                 borderTopLeftRadius: 3,
                 borderTopRightRadius: 3
@@ -196,32 +196,34 @@ export default function LogsPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden' }}>
             <LogTable logs={storedLogs} isLoading={isLoadingStored} />
-            
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                p: 2, 
-                borderTop: '1px solid #dadce0', 
-                bgcolor: '#ffffff', 
-                flexShrink: 0 
+
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                p: 2,
+                borderTop: '1px solid #1e293b',
+                bgcolor: '#111827',
+                flexShrink: 0
               }}
             >
-              <Pagination 
-                count={totalPages} 
-                page={page} 
-                onChange={handlePageChange} 
-                color="primary" 
-                showFirstButton 
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                showFirstButton
                 showLastButton
                 shape="rounded"
                 sx={{
                   '& .MuiPaginationItem-root': {
                     fontWeight: 500,
+                    color: '#94a3b8',
+                    borderColor: '#1e293b',
                   },
                   '& .Mui-selected': {
-                    bgcolor: '#e8f0fe !important',
-                    color: '#1a73e8',
+                    bgcolor: 'rgba(34,211,238,0.12) !important',
+                    color: '#22d3ee',
                     fontWeight: 'bold'
                   }
                 }}

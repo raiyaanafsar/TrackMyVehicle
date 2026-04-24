@@ -21,7 +21,7 @@ export default function Layout() {
 
   const { latestData, isConnected } = useWebSocket();
   const { isDeviceActive } = useWebSocket();
-  
+
   const [rashAlertOpen, setRashAlertOpen] = useState(false);
   const [collisionAlertOpen, setCollisionAlertOpen] = useState(false);
 
@@ -38,8 +38,8 @@ export default function Layout() {
   }, [latestData?.event]);
 
   const menuItems = [
-    { text: 'Live Map', path: '/', icon: <MapIcon /> },
-    { text: 'Telemetry Charts', path: '/charts', icon: <TimelineIcon /> },
+    { text: 'Live Tracking', path: '/', icon: <MapIcon /> },
+    { text: 'Sensor Analytics', path: '/charts', icon: <TimelineIcon /> },
     { text: 'System Logs', path: '/logs', icon: <ListAltIcon /> },
   ];
 
@@ -47,36 +47,36 @@ export default function Layout() {
     <Box sx={{ display: 'flex' }}>
 
       {/* TOP HEADER */}
-      <AppBar 
-        position="fixed" 
-        sx={{ 
-          width: `calc(100% - ${drawerWidth}px)`, 
-          ml: `${drawerWidth}px`, 
-          bgcolor: '#ffffff', 
-          color: '#202124',
+      <AppBar
+        position="fixed"
+        sx={{
+          width: `calc(100% - ${drawerWidth}px)`,
+          ml: `${drawerWidth}px`,
+          bgcolor: '#111827',
+          color: '#e2e8f0',
           boxShadow: 'none',
-          borderBottom: '1px solid #dadce0'
+          borderBottom: '1px solid #1e293b'
         }}
       >
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
 
           {/* LEFT: Title */}
-          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 500, letterSpacing: '-0.5px' }}>
-            ESP32 Vehicle Tracker
+          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600, letterSpacing: '0.5px', color: '#22d3ee' }}>
+            TrackMyVehicle
           </Typography>
 
-          {/* MIDDLE: Critical Alerts*/}
+          {/* MIDDLE: Critical Alerts */}
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             {latestData?.event === 'tow' && (
               <Chip
                 label="⚠️ TOWING DETECTED"
-                sx={{ fontWeight: 'bold', bgcolor: '#fce8e6', color: '#d93025', border: '1px solid #f28b82' }}
+                sx={{ fontWeight: 'bold', bgcolor: 'rgba(251,146,60,0.15)', color: '#fb923c', border: '1px solid rgba(251,146,60,0.4)' }}
               />
             )}
             {latestData?.event === 'toppling' && (
               <Chip
                 label="🚨 TOPPLING DETECTED"
-                sx={{ fontWeight: 'bold', bgcolor: '#fce8e6', color: '#d93025', border: '1px solid #f28b82' }}
+                sx={{ fontWeight: 'bold', bgcolor: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.4)' }}
               />
             )}
           </Box>
@@ -86,27 +86,27 @@ export default function Layout() {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              bgcolor: '#f1f3f4', 
+              bgcolor: '#0f172a',
               borderRadius: 8,
               px: 2,
               py: 0.75,
               gap: 2,
-              border: '1px solid #dadce0'
+              border: '1px solid #1e293b'
             }}
           >
             {/* 1. Server Connection */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
               {isConnected ? (
-                <WifiIcon sx={{ fontSize: 18, color: '#1e8e3e' }} /> 
+                <WifiIcon sx={{ fontSize: 18, color: '#4ade80' }} />
               ) : (
-                <WifiOffIcon sx={{ fontSize: 18, color: '#d93025' }} /> 
+                <WifiOffIcon sx={{ fontSize: 18, color: '#f87171' }} />
               )}
-              <Typography variant="caption" sx={{ fontWeight: 600, color: '#5f6368', letterSpacing: 0.5 }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: '#94a3b8', letterSpacing: 0.5 }}>
                 SERVER
               </Typography>
             </Box>
 
-            <Box sx={{ width: '1px', height: '16px', bgcolor: '#bdc1c6' }} />
+            <Box sx={{ width: '1px', height: '16px', bgcolor: '#334155' }} />
 
             {/* 2. ESP32 Device Status */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -115,8 +115,10 @@ export default function Layout() {
                   width: 10,
                   height: 10,
                   borderRadius: '50%',
-                  bgcolor: isDeviceActive ? '#1e8e3e' : '#d93025',
-                  boxShadow: isDeviceActive ? '0 0 4px rgba(30,142,62,0.4)' : '0 0 4px rgba(217,48,37,0.4)',
+                  bgcolor: isDeviceActive ? '#4ade80' : '#f87171',
+                  boxShadow: isDeviceActive
+                    ? '0 0 6px #4ade80, 0 0 12px rgba(74,222,128,0.4)'
+                    : '0 0 6px #f87171, 0 0 12px rgba(248,113,113,0.4)',
                   transition: 'all 0.3s ease'
                 }}
               />
@@ -124,7 +126,7 @@ export default function Layout() {
                 variant="caption"
                 sx={{
                   fontWeight: 600,
-                  color: '#5f6368',
+                  color: '#94a3b8',
                   letterSpacing: 0.5
                 }}
               >
@@ -136,26 +138,31 @@ export default function Layout() {
         </Toolbar>
       </AppBar>
 
-      {/* LEFT SIDEBAR  */}
+      {/* LEFT SIDEBAR */}
       <Drawer
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          '& .MuiDrawer-paper': { 
-            width: drawerWidth, 
-            boxSizing: 'border-box', 
-            bgcolor: '#ffffff', 
-            color: '#3c4043',
-            borderRight: '1px solid #dadce0'
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            bgcolor: '#111827',
+            color: '#94a3b8',
+            borderRight: '1px solid #1e293b'
           },
         }}
         variant="permanent"
         anchor="left"
       >
         <Toolbar sx={{ mb: 1, mt: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', letterSpacing: '-0.5px' }}>
-            IoT Dashboard
-          </Typography>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#22d3ee', letterSpacing: '1px', fontSize: '1rem' }}>
+              TrackMyVehicle
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#475569', letterSpacing: '2px', fontSize: '0.65rem', textTransform: 'uppercase' }}>
+              Vehicle Monitor
+            </Typography>
+          </Box>
         </Toolbar>
         <List sx={{ px: 1.5 }}>
           {menuItems.map((item) => {
@@ -166,38 +173,46 @@ export default function Layout() {
                   onClick={() => navigate(item.path)}
                   selected={isSelected}
                   sx={{
-                    borderRadius: '24px', 
-                    '&.Mui-selected': { 
-                      bgcolor: '#e8f0fe', 
-                      color: '#1a73e8', 
-                      '&:hover': { bgcolor: '#d2e3fc' }
+                    borderRadius: '12px',
+                    '&.Mui-selected': {
+                      bgcolor: 'rgba(34,211,238,0.12)',
+                      color: '#22d3ee',
+                      '&:hover': { bgcolor: 'rgba(34,211,238,0.18)' }
                     },
-                    '&:hover': { 
-                      bgcolor: '#f1f3f4', 
-                      color: '#202124'
+                    '&:hover': {
+                      bgcolor: 'rgba(255,255,255,0.04)',
+                      color: '#e2e8f0'
                     }
                   }}
                 >
-                  <ListItemIcon 
-                    sx={{ 
+                  <ListItemIcon
+                    sx={{
                       minWidth: 40,
-                      color: isSelected ? '#1a73e8' : '#5f6368' 
+                      color: isSelected ? '#22d3ee' : '#64748b'
                     }}
                   >
                     {item.icon}
                   </ListItemIcon>
-                  <ListItemText 
-                    primary={item.text} 
-                    primaryTypographyProps={{ 
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{
                       fontWeight: isSelected ? 600 : 500,
-                      fontSize: '0.95rem'
-                    }} 
+                      fontSize: '0.95rem',
+                      color: isSelected ? '#22d3ee' : '#94a3b8'
+                    }}
                   />
                 </ListItemButton>
               </ListItem>
             );
           })}
         </List>
+
+        {/* Bottom accent line */}
+        <Box sx={{ mt: 'auto', p: 2, borderTop: '1px solid #1e293b' }}>
+          <Typography variant="caption" sx={{ color: '#334155', fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+            Real-time telemetry via WebSocket
+          </Typography>
+        </Box>
       </Drawer>
 
       {/* MAIN CONTENT */}
@@ -205,15 +220,15 @@ export default function Layout() {
         component="main"
         sx={{
           flexGrow: 1,
-          bgcolor: '#f8f9fa',
+          bgcolor: '#0a0e1a',
           p: 3,
           height: '100vh',
-          display: 'flex',          
+          display: 'flex',
           flexDirection: 'column',
           boxSizing: 'border-box',
         }}
       >
-        <Toolbar /> 
+        <Toolbar />
 
         <Box sx={{ flexGrow: 1, minHeight: 0, overflow: 'auto', pr: 1 }}>
           <Outlet />
@@ -232,31 +247,32 @@ export default function Layout() {
         </Alert>
       </Snackbar>
 
-      <Dialog 
-        open={collisionAlertOpen} 
+      <Dialog
+        open={collisionAlertOpen}
         disableEscapeKeyDown
         PaperProps={{
-          sx: { borderRadius: 3, p: 1 } 
+          sx: { borderRadius: 3, p: 1, border: '1px solid rgba(248,113,113,0.3)' }
         }}
       >
-        <DialogTitle sx={{ color: '#d93025', fontWeight: 'bold', pb: 1 }}>
+        <DialogTitle sx={{ color: '#f87171', fontWeight: 'bold', pb: 1 }}>
           CRITICAL ALERT
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body1" sx={{ color: '#3c4043' }}>
+          <Typography variant="body1" sx={{ color: '#cbd5e1' }}>
             A vehicle collision has been detected! Please check the live map and take immediate action.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ pr: 2, pb: 2 }}>
-          <Button 
-            onClick={() => setCollisionAlertOpen(false)} 
-            variant="contained" 
-            sx={{ 
-              bgcolor: '#d93025', 
+          <Button
+            onClick={() => setCollisionAlertOpen(false)}
+            variant="contained"
+            sx={{
+              bgcolor: '#f87171',
+              color: '#0a0e1a',
               boxShadow: 'none',
               textTransform: 'none',
-              fontWeight: 600,
-              '&:hover': { bgcolor: '#b3261e', boxShadow: 'none' }
+              fontWeight: 700,
+              '&:hover': { bgcolor: '#dc2626', boxShadow: 'none' }
             }}
           >
             Acknowledge & Dismiss
