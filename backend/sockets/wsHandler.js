@@ -105,7 +105,7 @@ const setupWebSocket = (server) => {
                 }
 
             } catch (e) {
-                console.log("Invalid JSON or DB Error:", e.message);
+                console.error("WebSocket message or DB Error:", e);
             }
         });
 
