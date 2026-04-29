@@ -20,9 +20,7 @@ export const WebSocketProvider = ({ children }) => {
 
   const resetWatchdog = () => {
     setIsDeviceActive(true);
-
     if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
-
     watchdogTimer.current = setTimeout(() => {
       setIsDeviceActive(false);
     }, 5000);
@@ -33,6 +31,7 @@ export const WebSocketProvider = ({ children }) => {
       wsRef.current.send(JSON.stringify(payload));
     }
   };
+
   const updateSimulation = (active, type) => {
     setSimActive(active);
     setSimType(type);
@@ -40,12 +39,12 @@ export const WebSocketProvider = ({ children }) => {
       wsRef.current.send(JSON.stringify({ type: 'simulation_control', active, simMode: type }));
     }
   };
+
   useEffect(() => {
     if (!showPath) {
       setLocalPath([]);
       return;
     }
-
     if (latestData?.lat && latestData?.lon) {
       setLocalPath((prevPath) => {
         const lastPoint = prevPath[prevPath.length - 1];
@@ -56,12 +55,13 @@ export const WebSocketProvider = ({ children }) => {
       });
     }
   }, [latestData, showPath]);
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const [historyRes, analyticsRes] = await Promise.all([
-          fetch('http://localhost:8000/api/history'),
-          fetch('http://localhost:8000/api/analytics')
+          fetch('https://trackmyvehicle-4.onrender.com/api/history'),
+          fetch('https://trackmyvehicle-4.onrender.com/api/analytics')
         ]);
 
         const dbHistory = await historyRes.json();
@@ -74,20 +74,22 @@ export const WebSocketProvider = ({ children }) => {
         }));
 
         setHistory(formattedHistory);
-        setAnalytics(dbAnalytics); 
+        setAnalytics(dbAnalytics);
 
         if (formattedHistory.length > 0) {
           setLatestData(formattedHistory[0]);
         }
       } catch (error) {
-        console.error('Error fetching data from MongoDB:', error);
+        console.error('Error fetching initial data:', error);
       }
     };
 
     fetchInitialData();
 
-    const ws = new WebSocket('ws://localhost:8000/ws');
+    // ✅ FIX: Use wss:// for Render (not ws://localhost)
+    const ws = new WebSocket('wss://trackmyvehicle-4.onrender.com/ws');
     wsRef.current = ws;
+
     ws.onopen = () => {
       console.log('Connected to WebSocket backend');
       setIsConnected(true);
@@ -97,7 +99,7 @@ export const WebSocketProvider = ({ children }) => {
     ws.onmessage = (event) => {
       try {
         const parsedData = JSON.parse(event.data);
-        if (parsedData.status === "connected") return;
+        if (parsedData.status === 'connected') return;
 
         if (parsedData.messageType === 'analytics') {
           setAnalytics({
@@ -106,7 +108,9 @@ export const WebSocketProvider = ({ children }) => {
           });
           return;
         }
+
         resetWatchdog();
+
         const newData = {
           id: Date.now(),
           timestamp: new Date().toLocaleTimeString(),
@@ -125,16 +129,36 @@ export const WebSocketProvider = ({ children }) => {
     ws.onclose = () => {
       console.log('Disconnected from WebSocket');
       setIsConnected(false);
+      setIsDeviceActive(false);
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setIsConnected(false);
     };
 
     return () => {
       ws.close();
       if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
-    }
+    };
   }, []);
 
   return (
-    <WebSocketContext.Provider value={{ isConnected,setShowPath,showPath,localPath, simActive, simType, updateSimulation, sendCommand, isDeviceActive, latestData, history, sessionLogs, analytics }}>
+    <WebSocketContext.Provider value={{
+      isConnected,
+      setShowPath,
+      showPath,
+      localPath,
+      simActive,
+      simType,
+      updateSimulation,
+      sendCommand,
+      isDeviceActive,
+      latestData,
+      history,
+      sessionLogs,
+      analytics
+    }}>
       {children}
     </WebSocketContext.Provider>
   );
