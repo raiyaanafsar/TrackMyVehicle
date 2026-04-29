@@ -220,7 +220,7 @@ export default function MapPage() {
               boxShadow: `0 0 22px ${speedColor}45`,
               transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
             }}>
-              <Typography sx={{ fontWeight: 800, fontSize: '1.7rem', color: '#e2e8f0', lineHeight: 1 }}>
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#e2e8f0', lineHeight: 1 }}>
                 {currentSpeed}
               </Typography>
               <Typography sx={{ fontWeight: 700, fontSize: '0.58rem', color: '#64748b', letterSpacing: '1.5px', mt: 0.25 }}>

@@ -11,12 +11,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-connectDB();
-
 app.get('/get', (req, res) => {
     res.send("Server is running.");
 });
-app.use('/api', telemetryRoutes); 
+app.use('/api', telemetryRoutes);
 
 const server = http.createServer(app);
 setupWebSocket(server);
@@ -24,7 +22,12 @@ setupWebSocket(server);
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.PORT || 8000;
 
-server.listen(PORT, HOST, () => {
-    console.log(`Server running at http://${HOST}:${PORT}`);
-    console.log(`WebSocket at ws://${HOST}:${PORT}/ws`);
-});
+const start = async () => {
+    await connectDB();
+    server.listen(PORT, HOST, () => {
+        console.log(`Server running at http://${HOST}:${PORT}`);
+        console.log(`WebSocket at ws://${HOST}:${PORT}/ws`);
+    });
+};
+
+start();
