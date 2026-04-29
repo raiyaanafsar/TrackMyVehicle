@@ -3,7 +3,11 @@ const mongoose = require('mongoose');
 const connectDB = async () => {
     try {
         const mongoURI = process.env.MONGODB_URI;
-        await mongoose.connect(mongoURI);
+        await mongoose.connect(mongoURI, {
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
+            family: 4,
+        });
         console.log('Connected to MongoDB Database');
 
         if (process.env.CLEAR_DB_ON_START === 'true') {
